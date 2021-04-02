@@ -97,7 +97,7 @@ namespace Blockchain_example
             public HashSet<string> GetBlockchainNodes() => DependencyManager.BlockMiner.Blockchain.Nodes;
 
             [Route(HttpVerbs.Get, "/blockchain/nodes/resolve")]
-            public bool ResolveBlockchainNodesConflict() => DependencyManager.BlockMiner.ResolveConflicts();
+            public ResolveConflictsModel ResolveBlockchainNodesConflict() => DependencyManager.BlockMiner.ResolveConflicts();
         }
     }
 }
