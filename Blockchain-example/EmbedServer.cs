@@ -5,6 +5,7 @@ using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Blockchain_example
@@ -50,29 +51,16 @@ namespace Blockchain_example
 
         public sealed class Controller : WebApiController
         {
-
             [Route(HttpVerbs.Get, "/blocks")]
-            public string GetAllBlocks() => JsonConvert.SerializeObject(
-                DependencyManager.BlockMiner.Blockchain,
-                new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    Formatting = Formatting.Indented
-                });
+            public IList<Block> GetAllBlocks() => DependencyManager.BlockMiner.Blockchain.Blocks;
 
-            [Route(HttpVerbs.Get, "/blocks/index/{index?}")]
-            public string GetAllBlocks(int index)
+        [Route(HttpVerbs.Get, "/blocks/index/{index?}")]
+            public Block GetAllBlocks(int index)
             {
                 Block block = null;
-                if (index < DependencyManager.BlockMiner.Blockchain.Count)
-                    block = DependencyManager.BlockMiner.Blockchain[index];
-                return JsonConvert.SerializeObject(
-                    block,
-                    new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        Formatting = Formatting.Indented
-                    });
+                if (index < DependencyManager.BlockMiner.Blockchain.Blocks.Count)
+                    block = DependencyManager.BlockMiner.Blockchain.Blocks[index];
+                return block;
             }
 
             [Route(HttpVerbs.Post, "/mine")]
@@ -87,25 +75,29 @@ namespace Blockchain_example
             }
 
             [Route(HttpVerbs.Get, "/blocks/latest")]
-            public string GetLatestBlocks()
-            {
-                var block = DependencyManager.BlockMiner.Blockchain.LastOrDefault();
-                return JsonConvert.SerializeObject(
-                    block,
-                    new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        Formatting = Formatting.Indented
-                    });
-            }
+            public Block GetLatestBlocks() => DependencyManager.BlockMiner.Blockchain.LatestBlock();
 
-            [Route(HttpVerbs.Post, "/add")]
+            [Route(HttpVerbs.Post, "/transactions/add")]
             public void AddTransaction()
             {
                 var data = HttpContext.GetRequestDataAsync<Transaction>();
                 if (data != null && data.Result != null)
                     DependencyManager.TransactionPool.AddTransaction(data.Result);
             }
+
+            [Route(HttpVerbs.Post, "/blockchain/nodes/add")]
+            public void AddNodeToBlockchain()
+            {
+                var data = HttpContext.GetRequestDataAsync<List<string>>();
+                if (data != null && data.Result != null)
+                    DependencyManager.BlockMiner.Blockchain.AddNodes(data.Result);
+            }
+
+            [Route(HttpVerbs.Get, "/blockchain/nodes")]
+            public HashSet<string> GetBlockchainNodes() => DependencyManager.BlockMiner.Blockchain.Nodes;
+
+            [Route(HttpVerbs.Get, "/blockchain/nodes/resolve")]
+            public bool ResolveBlockchainNodesConflict() => DependencyManager.BlockMiner.ResolveConflicts();
         }
     }
 }

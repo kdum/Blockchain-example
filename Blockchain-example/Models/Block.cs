@@ -9,7 +9,7 @@ namespace Blockchain_example.Models
         public DateTime TimeStamp { get; set; }
         public string Hash { get; set; }
         public string PreviousHash { get; set; }
-        public long Nonce { get; set; }
+        public long Proof { get; set; }
         public IList<Transaction> Transactions { get; set; } = new List<Transaction>();
     }
 }
